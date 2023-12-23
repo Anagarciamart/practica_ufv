@@ -1,8 +1,7 @@
 import shutil
 
 import io
-from fastapi.responses import JSONResponse
-from fastapi import FastAPI, File, UploadFile,Form
+from fastapi import FastAPI
 import pandas as pd
 from typing import  List
 
@@ -12,45 +11,41 @@ class BaseModel(PydanticBaseModel):
     class Config:
         arbitrary_types_allowed = True
 
-class Contrato(BaseModel):
-    #titulo:str
-    #autor:str
-    #pais:str
-    #genero:str
-    fecha:str
-    centro_seccion:str
-    nreg:str
-    nexp:str
-    objeto:str
-    tipo:str
-    procedimiento:str
-    numlicit:str
-    numinvitcurs:str
-    proc_adjud:str
-    presupuesto_con_iva:str
-    valor_estimado:str
-    importe_adj_con_iva:str
-    adjuducatario:str
-    fecha_formalizacion:str
-    I_G:str
+class Libro(BaseModel):
+    id_libro: int
+    libro_nombre: str
+    numpaginas: int
+    libro_raiting_promedio: float
+    fechapublicacion: str
+    id_editorial: int
+    libro_review_counts: int
+    id_idioma: int
+    id_autor: int
+    ISBN: int
+    idioma: str
+    autor_genero: str
+    autor: str
+    id_pais: int
+    autor_rating_promedio: float
+    pais: str
+    editorial: str
 
 
-class ListadoContratos(BaseModel):
-    contratos = List[Contrato]
+class ListadoLibros(BaseModel):
+    libros = List[Libro]
 
 app = FastAPI(
     title="Servidor de datos",
-    description="""Servimos datos de contratos, pero podríamos hacer muchas otras cosas, la la la.""",
+    description="""Datos de libros""",
     version="0.1.0",
 )
 
 
 @app.get("/retrieve_data/")
-#def insercion_endpoint (titulo:str = Form(...), autor:str=Form(...), pais:str=Form(...),genero:str=File(...),  archivo: UploadFile=File(...)):
 def retrieve_data ():
-    todosmisdatos = pd.read_csv('./contratos_inscritos_simplificado_2023.csv',sep=';')
+    todosmisdatos = pd.read_csv('Libros.csv',sep=';')
     todosmisdatos = todosmisdatos.fillna(0)
     todosmisdatosdict = todosmisdatos.to_dict(orient='records')
-    listado = ListadoContratos()
-    listado.contratos = todosmisdatosdict
+    listado = ListadoLibros()
+    listado.libros = todosmisdatosdict
     return listado

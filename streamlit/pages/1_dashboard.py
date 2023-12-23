@@ -3,93 +3,67 @@ import pandas as pd
 import streamlit as st
 import plotly.express as px
 
-import matplotlib
-from matplotlib.backends.backend_agg import RendererAgg
-
-import requests
 import seaborn as sns
 @st.cache_data
-def load_data(url: str):
-    r = requests.get(url)
-    if r.status_code != 200:
-        return None
-    mijson = r.json()
-    listado = mijson['contratos']
-    df = pd.DataFrame.from_records(listado)
-    df['importe_adj_con_iva'] = df['importe_adj_con_iva'].str.replace('€', '')
-    df['importe_adj_con_iva'] = df['importe_adj_con_iva'].str.replace('.', '')
-    df['importe_adj_con_iva'] = df['importe_adj_con_iva'].str.replace(',', '.')
-    df['presupuesto_con_iva'] = df['presupuesto_con_iva'].str.replace('€', '')
-    df['presupuesto_con_iva'] = df['presupuesto_con_iva'].str.replace('.', '')
-    df['presupuesto_con_iva'] = df['presupuesto_con_iva'].str.replace(',', '.')
-
-    df['presupuesto_con_iva'] = df['presupuesto_con_iva'].astype(float)
-    df['importe_adj_con_iva'] = df['importe_adj_con_iva'].astype(float)
-
+def load_data():
+    df = pd.read_csv('/home/ana/repositorios/repos/practicafinal/practica_ufv/fastapi/Libros.csv')
     return df
-
-
 
 def info_box (texto, color=None):
     st.markdown(f'<div style = "background-color:#4EBAE1;opacity:70%"><p style="text-align:center;color:white;font-size:30px;">{texto}</p></div>', unsafe_allow_html=True)
 
+# Call the load_data function
+df = load_data()
 
-
-matplotlib.use("agg")
-lock = RendererAgg.lock
-
-df_merged = load_data('http://fastapi:8000/retrieve_data')
-
-
-registros = str(df_merged.shape[0])
-adjudicatarios = str(len(df_merged.adjuducatario.unique()))
-centro = str(len(df_merged.centro_seccion.unique()))
-tipologia = str(len(df_merged.tipo.unique()))
-presupuesto_medio = str(round(df_merged.presupuesto_con_iva.mean(),2))
-adjudicado_medio = str(round(df_merged.importe_adj_con_iva.mean(),2))
+# Calcular variables adicionales
+registros = str(df.shape[0])
+autores_unicos = str(df['autor'].nunique())
+editoriales_unicas = str(df['editorial'].nunique())
+rating_promedio_autores = str(round(df['autor_rating_promedio'].mean(), 2))
+reviews_promedio_libros = str(round(df['libro_review_counts'].mean(),2))
 
 sns.set_palette("pastel")
-
-
-st.header("Información general")
+st.header("Información general de libros y autores")
 
 col1, col2, col3 = st.columns(3)
+col4, col5 = st.columns(2)
 
-col4, col5, col6 = st.columns(3)
 with col1:
-    col1.subheader('# contratos')
+    col1.subheader('# Libros')
     info_box(registros)
 with col2:
-    col2.subheader('# adjudicatarios')
-    info_box(adjudicatarios)
+    col2.subheader('# Autores')
+    info_box(autores_unicos)
 with col3:
-    col3.subheader('# centros')
-    info_box(centro)
-
+    col3.subheader('# Editoriales')
+    info_box(editoriales_unicas)
 with col4:
-    col4.subheader('# tipologias')
-    info_box(tipologia)
-
-## Clases de medios digitales de publicacion
+    col4.subheader('# Rating Promedio de Autores')
+    info_box(rating_promedio_autores, col4)
 with col5:
-    col5.subheader('# presupuesto medio')
-    info_box(presupuesto_medio, col5)
-with col6:
-    ## publicaciones
-    col6.subheader('# importe medio adjud')
-    info_box(adjudicado_medio, col6)
+    col5.subheader('# Rating Promedio de Reviews')
+    info_box(reviews_promedio_libros, col5)
 
-# with st.beta_container('Información general sobre obras')
-#        datos = df_merged[['id', 'agno_i', 'clasemicro1']]
-tab1, tab2 = st.tabs(["Procedimientos negociados sin publicidad", "Distribución de importe en procedimiento Negociado sin publicidad"])
+# Agregar una selección para el usuario
+seleccion = st.selectbox("Seleccione una opción", ["Información General", "Distribución de Ratings Promedio de Autores", "Pie Chart", "Bar Chart", "Scatter Plot"])
 
-fig1 = px.scatter(df_merged,x='importe_adj_con_iva',y='presupuesto_con_iva',size='numlicit',color='procedimiento')
+# Mostrar información o gráfico según la selección del usuario
+if seleccion == "Distribución de Ratings Promedio de Autores":
+    grafico_autores = px.histogram(df, x='autor_rating_promedio', title='Distribución de Ratings Promedio de Autores', nbins=20)
+    st.plotly_chart(grafico_autores, theme="streamlit", use_container_width=True)
 
-fig2 = px.box(df_merged.query("procedimiento == 'Negociado sin publicidad'"),x='importe_adj_con_iva')
-with tab1:
-    # Use the Streamlit theme.
-    # This is the default. So you can also omit the theme argument.
-    st.plotly_chart(fig1, theme="streamlit", use_container_width=True)
-with tab2:
-    # Use the native Plotly theme.
-    st.plotly_chart(fig2, theme=None, use_container_width=True)
+elif seleccion == "Pie Chart":
+    # Gráfico de queso basado en la columna 'pais'
+    grafico_pie = px.pie(df, names='pais', title='Distribución de Paises', hole=0.3)
+    st.plotly_chart(grafico_pie, theme="streamlit", use_container_width=True)
+
+elif seleccion == "Bar Chart":
+    # Gráfico de barras basado en la columna 'autor'
+    grafico_barras = px.bar(df, x='autor', title='Número de Libros por Autor')
+    st.plotly_chart(grafico_barras, theme="streamlit", use_container_width=True)
+
+elif seleccion == "Scatter Plot":
+    # Crear un gráfico de dispersión basado en las columnas 'numpaginas' y 'autor_rating_promedio'
+    grafico_dispersion = px.scatter(df, x='numpaginas', y='autor_rating_promedio', title='Scatter Plot: Número de Páginas vs Rating Promedio de Autores')
+    st.plotly_chart(grafico_dispersion, theme="streamlit", use_container_width=True)
+
