@@ -25,7 +25,7 @@ def info_box(texto):
 # Call the load_data function
 df_m = load_data('https://fastapi:8000/retrieve_data')
 
-# Calcular variables adicionales
+# Calcular variables
 registros = str(df_m.shape[0])
 autores_unicos = str(df_m['autor'].nunique())
 editoriales_unicas = str(df_m['editorial'].nunique())
