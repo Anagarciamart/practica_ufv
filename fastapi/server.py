@@ -1,15 +1,14 @@
-import shutil
-
-import io
 from fastapi import FastAPI
 import pandas as pd
-from typing import  List
+from typing import List
 
 from pydantic import BaseModel as PydanticBaseModel
+
 
 class BaseModel(PydanticBaseModel):
     class Config:
         arbitrary_types_allowed = True
+
 
 class Libro(BaseModel):
     id_libro: int
@@ -34,6 +33,7 @@ class Libro(BaseModel):
 class ListadoLibros(BaseModel):
     libros = List[Libro]
 
+
 app = FastAPI(
     title="Servidor de datos",
     description="""Datos de libros""",
@@ -42,8 +42,8 @@ app = FastAPI(
 
 
 @app.get("/retrieve_data/")
-def retrieve_data ():
-    todosmisdatos = pd.read_csv('Libros.csv',sep=';')
+def retrieve_data():
+    todosmisdatos = pd.read_csv('Libros.csv', sep=';')
     todosmisdatos = todosmisdatos.fillna(0)
     todosmisdatosdict = todosmisdatos.to_dict(orient='records')
     listado = ListadoLibros()
