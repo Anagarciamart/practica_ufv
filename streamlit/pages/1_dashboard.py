@@ -23,7 +23,7 @@ def info_box(texto):
 
 
 # Call the load_data function
-df_m = load_data('https://fastapi:8000/retrieve_data')
+df_m = load_data('http://fastapi:8000/retrieve_data')
 
 # Calcular variables
 registros = str(df_m.shape[0])
