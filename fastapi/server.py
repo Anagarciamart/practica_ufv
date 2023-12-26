@@ -40,7 +40,7 @@ app = FastAPI(
     version="0.1.0",
 )
 
-
+#funcion get
 @app.get("/retrieve_data/")
 def retrieve_data():
     todosmisdatos = pd.read_csv('Libros.csv', sep='|')
