@@ -22,7 +22,7 @@ def info_box(texto):
     st.markdown(f'<div style = "background-color:#4EBAE1;opacity:70%"><p style="text-align:center;color:white;font-size:30px;">{texto}</p></div>', unsafe_allow_html=True)
 
 
-# llamo a load_data
+# Llamo a load_data
 df_m = load_data('http://fastapi:8000/retrieve_data/')
 
 # Calcular variables
